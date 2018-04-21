@@ -1,0 +1,9 @@
+version: '3'
+services:
+  spear:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+     - GITHUB_TOKEN=SUPER_SECRET
+     - SPECS_DIR=owner;repo;path
