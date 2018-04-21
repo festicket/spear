@@ -16,3 +16,6 @@
 # dep-related directories
 pkg/*
 src/*/vendor/*
+
+# May contain private information
+docker-compose.yml
