@@ -171,6 +171,9 @@ func main() {
 			}
 		}
 	}))
+	r.Get("/", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		http.Redirect(rw, r, "/master/", 302)
+	}))
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe("0.0.0.0:8000", nil))
 }
