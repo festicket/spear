@@ -101,15 +101,17 @@ func GetGithubClient() *github.Client {
 
 func main() {
 	r := pat.New()
-	r.Get("/files/{filename}", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+	r.Get("/{branch}/files/{filename}/json/", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		filename := r.URL.Query().Get(":filename")
+		branchName := r.URL.Query().Get(":branch")
 
 		parts := strings.Split(SPECS_DIR, ";")
 		owner, repo, p := parts[0], parts[1], parts[2]
 		p = path.Join(p, filename)
 
 		ctx := context.Background()
-		fileContent, _, _, err := GetGithubClient().Repositories.GetContents(ctx, owner, repo, p, nil)
+		opts := github.RepositoryContentGetOptions{Ref: branchName}
+		fileContent, _, _, err := GetGithubClient().Repositories.GetContents(ctx, owner, repo, p, &opts)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -128,12 +130,15 @@ func main() {
 		rw.WriteHeader(http.StatusOK)
 		rw.Write(b)
 	}))
-	r.Get("/doc/{filename}", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+	r.Get("/{branch}/doc/{filename}", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		filename := r.URL.Query().Get(":filename")
+		branchName := r.URL.Query().Get(":branch")
 
 		opts := RedocOpts{}
 		opts.EnsureDefaults()
-		opts.SpecURL = fmt.Sprintf("/files/%s", filename)
+		// TODO: use .Name() and then GetRoute
+		// http://www.gorillatoolkit.org/pkg/pat
+		opts.SpecURL = fmt.Sprintf("/%s/files/%s/json/", branchName, filename)
 
 		tmpl := template.Must(template.New("redoc").Parse(redocTemplate))
 		buf := bytes.NewBuffer(nil)
@@ -144,7 +149,9 @@ func main() {
 		rw.WriteHeader(http.StatusOK)
 		rw.Write(b)
 	}))
-	r.Get("/", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+	r.Get("/{branch}/", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		branchName := r.URL.Query().Get(":branch")
+
 		rw.Header().Set("Content-Type", "text/html; charset=utf-8")
 		rw.WriteHeader(http.StatusOK)
 
@@ -152,14 +159,15 @@ func main() {
 		owner, repo, p := parts[0], parts[1], parts[2]
 
 		ctx := context.Background()
-		_, files, _, err := GetGithubClient().Repositories.GetContents(ctx, owner, repo, p, nil)
+		opts := github.RepositoryContentGetOptions{Ref: branchName}
+		_, files, _, err := GetGithubClient().Repositories.GetContents(ctx, owner, repo, p, &opts)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		for _, f := range files {
 			if *f.Name != "README.md" {
-				io.WriteString(rw, fmt.Sprintf(`<p><a href="/doc/%s" target="_blank" rel="nofollow">%s</a></p>`, *f.Name, *f.Name))
+				io.WriteString(rw, fmt.Sprintf(`<p><a href="/%s/doc/%s" target="_blank" rel="nofollow">%s</a></p>`, branchName, *f.Name, *f.Name))
 			}
 		}
 	}))
