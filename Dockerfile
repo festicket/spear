@@ -4,6 +4,7 @@ FROM alpine:3.5
 RUN apk add --no-cache ca-certificates
 
 ADD ./bin/spear /main/spear
+ADD ./src/spear/templates /main/templates
 WORKDIR /main
 
 CMD ["./spear"]

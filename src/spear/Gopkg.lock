@@ -51,20 +51,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/go-openapi/runtime"
-  packages = [
-    ".",
-    "logger",
-    "middleware",
-    "middleware/denco",
-    "middleware/header",
-    "middleware/untyped",
-    "security"
-  ]
-  revision = "f12926f16ac2fb1da15316fd0aa84ce0d64550c3"
-
-[[projects]]
-  branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
   revision = "bcff419492eeeb01f76e77d2ebc714dc97b607f5"
@@ -80,12 +66,6 @@
   name = "github.com/go-openapi/swag"
   packages = ["."]
   revision = "811b1089cde9dad18d4d0c2d09fbdbf28dbd27a5"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/go-openapi/validate"
-  packages = ["."]
-  revision = "659e09d234fdd860a2556c5a53fcfff6f787e24b"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -212,6 +192,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "827927952c1d3f48850c303f8b4d107eb17cc312612e4bae545e729147685c14"
+  inputs-digest = "a0aa5caec5ac1315f932e1b0a205d0b228a994fee9eaf94d62c068693b826e67"
   solver-name = "gps-cdcl"
   solver-version = 1

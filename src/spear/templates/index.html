@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>SPEAR :: Homepage</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="container">
+      <h1>
+        <span class="badge badge-info">{{.BranchName}}</span> branch API specs
+      </h1>
+    </div>
+    <hr>
+    <div class="container">
+      <ol>
+        {{range .Files}}
+        <li>
+          <a href="{{.URL}}" target="_blank" rel="nofollow">
+            {{.Name}}
+          </a>
+        </li>
+        {{end}}
+      </ol>
+    </div>
+    <div class="fixed-bottom">
+      <hr>
+      <p class="text-muted text-center">zerc @ 2018</p>
+    </div>
+  </body>
+</html>

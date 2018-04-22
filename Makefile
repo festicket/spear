@@ -11,3 +11,8 @@ install:
 
 up: 
 	docker-compose up spear
+
+bup: build
+	docker-compose stop spear
+	docker-compose build spear
+	docker-compose up spear

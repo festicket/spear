@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -165,11 +164,34 @@ func main() {
 			log.Fatal(err)
 		}
 
+		type File struct {
+			URL  string
+			Name string
+		}
+
+		templateContext := struct {
+			BranchName string
+			Files      []*File
+		}{
+			BranchName: branchName,
+			Files:      []*File{},
+		}
+
 		for _, f := range files {
 			if *f.Name != "README.md" {
-				io.WriteString(rw, fmt.Sprintf(`<p><a href="/%s/doc/%s" target="_blank" rel="nofollow">%s</a></p>`, branchName, *f.Name, *f.Name))
+				templateContext.Files = append(templateContext.Files, &File{
+					Name: *f.Name,
+					URL:  fmt.Sprintf("/%s/doc/%s", branchName, *f.Name),
+				})
 			}
 		}
+
+		t, err := template.ParseFiles("templates/index.html")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		t.Execute(rw, &templateContext)
 	}))
 	r.Get("/", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		http.Redirect(rw, r, "/master/", 302)
