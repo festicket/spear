@@ -72,10 +72,9 @@ func main() {
 		templateContext := struct {
 			BranchName string
 			Files      []*Link
-		}{
-			BranchName: branchName,
-			Files:      []*Link{},
-		}
+			Branches   []*Link
+		}{}
+		templateContext.BranchName = branchName
 
 		for _, f := range files {
 			if *f.Name != "README.md" {
@@ -86,10 +85,33 @@ func main() {
 			}
 		}
 
-		RenderTemplate(rw, "index.html", &templateContext)
+		RenderTemplate(rw, "branch.html", &templateContext)
 	}))
 	r.Get("/", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		http.Redirect(rw, r, "/master/", 302)
+		ctx := context.Background()
+		opts := github.ListOptions{PerPage: 100}
+		branches, _, err := GetGithubClient().Repositories.ListBranches(
+			ctx, OWNER, REPO, &opts,
+		)
+		if HTTPError(rw, err) {
+			return
+		}
+
+		context := struct {
+			Repo     string
+			Branches []*Link
+		}{}
+
+		context.Repo = fmt.Sprintf("%s/%s", OWNER, REPO)
+
+		for _, b := range branches {
+			context.Branches = append(context.Branches, &Link{
+				Name: *b.Name,
+				URL:  fmt.Sprintf("/%s/", *b.Name),
+			})
+		}
+
+		RenderTemplate(rw, "index.html", &context)
 	}))
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe("0.0.0.0:8000", nil))
