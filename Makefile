@@ -4,7 +4,7 @@ help:
 	@echo "up - run the service"
 
 build: 
-	GOOS=linux go build -o bin/spear src/spear/main.go
+	GOOS=linux go build -o bin/spear src/spear/*.go
 
 install:
 	cd src/spear && dep ensure
