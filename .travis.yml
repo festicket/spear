@@ -19,5 +19,5 @@ before_install:
 deploy:
   provider: script
   script: docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" && make deploy
-  on:
-    tags: true
+  # on:
+  #   tags: true
