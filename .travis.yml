@@ -1,0 +1,23 @@
+sudo: required
+
+language: Go
+
+# env:
+#   - TRAVIS_TAG="0.1"
+
+services:
+  - docker
+
+before_install:
+  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+  - source ./activate
+  - make install
+  - make build
+  - docker build .
+  - docker images | head -n5
+
+deploy:
+  provider: script
+  script: docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" && make deploy
+  on:
+    tags: true
