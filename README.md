@@ -6,7 +6,7 @@ and render them via Swagger.
 
 ## TODO
 
-- [ ] Branch selector
+- [x] Branch selector
 - [ ] Cache requests (to avoid rate limits from Github)
   - [ ] Ability to reset the cache manually
 - [ ] Clear the code
