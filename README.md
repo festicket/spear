@@ -38,6 +38,10 @@ Visit http://localhost:8000
 
 - [x] Build a docker image
 - [x] Branch selector
+- [ ] Build responses from examples whenever it is possible
+  - [x] Get
+  - [ ] Post
+  - [ ] Not only 200 responses
 - [ ] Cache requests (to avoid rate limits from Github)
   - [ ] Ability to reset the cache manually
 - [ ] Clear the code

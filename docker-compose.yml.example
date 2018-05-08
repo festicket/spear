@@ -7,5 +7,6 @@ services:
     environment:
      - GITHUB_TOKEN=SUPER_SECRET
      - SPECS_DIR=owner;repo;path
+     - HOSTNAME=localhost:8000
     ports:
      - "8000:8000"

@@ -19,3 +19,5 @@ type Link struct {
 	URL  string
 	Name string
 }
+
+var HOSTNAME = os.Getenv("HOSTNAME")

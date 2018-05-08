@@ -6,32 +6,64 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"path"
+	"regexp"
 
-	"github.com/go-openapi/loads"
+	"github.com/go-openapi/spec"
 	"github.com/google/go-github/github"
 	"github.com/gorilla/pat"
 )
 
 func main() {
 	r := pat.New()
+	r.Get("/{branch}/try/{filename}/{path:.*}", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		specDoc, err := LoadSpec(r.URL.Query().Get(":branch"),
+			r.URL.Query().Get(":filename"))
+		if HTTPError(rw, err) {
+			return
+		}
+
+		spec.ExpandSpec(specDoc.Spec(), &spec.ExpandOptions{
+			SkipSchemas: false,
+		})
+
+		re := regexp.MustCompile(`\{[\d\w]+\}`) // regexp to replace things like {someVariable}
+
+		for path, pathItem := range specDoc.Spec().SwaggerProps.Paths.Paths {
+			pattern := re.ReplaceAllString(path, `[\d\w-]+`)
+			matched, _ := regexp.MatchString(pattern, fmt.Sprintf("/%s", r.URL.Query().Get(":path")))
+
+			if matched == false {
+				continue
+			}
+
+			// TODO: Support other operations
+			if pathItem.Get == nil {
+				continue
+			}
+
+			resp := make(map[string]interface{})
+			BuildExample(pathItem.Get.OperationProps.Responses.ResponsesProps.StatusCodeResponses[200].Schema, "", &resp)
+
+			b, _ := json.MarshalIndent(resp, "", " ")
+			rw.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			rw.WriteHeader(http.StatusOK)
+			rw.Write(b)
+			return
+		}
+
+		rw.WriteHeader(http.StatusNotFound)
+		return
+	}))
 	r.Get("/{branch}/files/{filename}/json/", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		branchName := r.URL.Query().Get(":branch")
-		filename := path.Join(DIR, r.URL.Query().Get(":filename"))
-
-		ctx := context.Background()
-		opts := github.RepositoryContentGetOptions{Ref: branchName}
-		fileContent, _, _, err := GetGithubClient().Repositories.GetContents(
-			ctx, OWNER, REPO, filename, &opts,
-		)
+		specDoc, err := LoadSpec(r.URL.Query().Get(":branch"),
+			r.URL.Query().Get(":filename"))
 		if HTTPError(rw, err) {
 			return
 		}
 
-		specDoc, err := loads.Spec(*fileContent.DownloadURL)
-		if HTTPError(rw, err) {
-			return
-		}
+		// Patch properties to have proper "try it now" links
+		specDoc.Spec().SwaggerProps.Host = HOSTNAME
+		specDoc.Spec().SwaggerProps.BasePath = fmt.Sprintf("/%s/try/%s", r.URL.Query().Get(":branch"), r.URL.Query().Get(":filename"))
 
 		b, err := json.MarshalIndent(specDoc.Spec(), "", "  ")
 		if HTTPError(rw, err) {

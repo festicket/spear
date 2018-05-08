@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"path"
 
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/spec"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
@@ -58,4 +60,44 @@ func GetGithubClient() *github.Client {
 	GithubClient = github.NewClient(tc)
 
 	return GithubClient
+}
+
+// Loads a spec from the branch given.
+func LoadSpec(branchName string, name string) (*loads.Document, error) {
+	filename := path.Join(DIR, name)
+
+	ctx := context.Background()
+	opts := github.RepositoryContentGetOptions{Ref: branchName}
+	fileContent, _, _, err := GetGithubClient().Repositories.GetContents(
+		ctx, OWNER, REPO, filename, &opts,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("Can't load the file due to the error: %s", err)
+	}
+
+	specDoc, err := loads.Spec(*fileContent.DownloadURL)
+	if err != nil {
+		return nil, fmt.Errorf("Can't parse the spec due to the error: %s", err)
+	}
+
+	return specDoc, nil
+}
+
+// Populates the target map given by examples of the response.
+func BuildExample(schema *spec.Schema, key string, target *map[string]interface{}) {
+	for k, v := range schema.Properties {
+		if v.Type.Contains("object") {
+			(*target)[k] = make(map[string]interface{})
+			BuildExample(&v, k, target)
+		} else {
+			example := v.SwaggerSchemaProps.Example
+
+			if key != "" {
+				(*target)[key].(map[string]interface{})[k] = example
+			} else {
+				(*target)[k] = example
+			}
+		}
+	}
 }
