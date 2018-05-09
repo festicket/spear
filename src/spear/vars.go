@@ -20,4 +20,6 @@ type Link struct {
 	Name string
 }
 
-var HOSTNAME = os.Getenv("HOSTNAME")
+var HOST = os.Getenv("HOST")
+
+var SCHEME = os.Getenv("SCHEME")

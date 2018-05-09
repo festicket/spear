@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/ghodss/yaml"
 	"github.com/go-openapi/spec"
 	"github.com/google/go-github/github"
 	"github.com/gorilla/pat"
@@ -16,14 +17,20 @@ import (
 func main() {
 	r := pat.New()
 	r.Get("/{branch}/try/{filename}/{path:.*}", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		specDoc, err := LoadSpec(r.URL.Query().Get(":branch"),
-			r.URL.Query().Get(":filename"))
+		branch := r.URL.Query().Get(":branch")
+		fname := r.URL.Query().Get(":filename")
+		specDoc, err := LoadSpec(branch, fname)
+
 		if HTTPError(rw, err) {
 			return
 		}
 
+		// TODO: for some reason r.URL.Scheme and r.URL.Host are empty
+		base := fmt.Sprintf("%s://%s/%s/files/%s/json/", SCHEME, HOST, branch, fname)
+
 		spec.ExpandSpec(specDoc.Spec(), &spec.ExpandOptions{
-			SkipSchemas: false,
+			RelativeBase: base,
+			SkipSchemas:  false,
 		})
 
 		re := regexp.MustCompile(`\{[\d\w]+\}`) // regexp to replace things like {someVariable}
@@ -54,15 +61,37 @@ func main() {
 		rw.WriteHeader(http.StatusNotFound)
 		return
 	}))
-	r.Get("/{branch}/files/{filename}/json/", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		specDoc, err := LoadSpec(r.URL.Query().Get(":branch"),
-			r.URL.Query().Get(":filename"))
+	r.Get("/{branch}/files/{filename}/json/{defs:.*}", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		fname := r.URL.Query().Get(":defs") // TODO: sanitaize the path!
+		branch := r.URL.Query().Get(":branch")
+
+		if fname != "" {
+			content, err := LoadFile(branch, fname)
+			if HTTPError(rw, err) {
+				return
+			}
+
+			j, err := yaml.YAMLToJSON([]byte(content))
+			if HTTPError(rw, err) {
+				return
+			}
+
+			rw.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			rw.WriteHeader(http.StatusOK)
+			rw.Write(j)
+
+			return
+		}
+
+		fname = r.URL.Query().Get(":filename")
+
+		specDoc, err := LoadSpec(branch, fname)
 		if HTTPError(rw, err) {
 			return
 		}
 
 		// Patch properties to have proper "try it now" links
-		specDoc.Spec().SwaggerProps.Host = HOSTNAME
+		specDoc.Spec().SwaggerProps.Host = HOST
 		specDoc.Spec().SwaggerProps.BasePath = fmt.Sprintf("/%s/try/%s", r.URL.Query().Get(":branch"), r.URL.Query().Get(":filename"))
 
 		b, err := json.MarshalIndent(specDoc.Spec(), "", "  ")

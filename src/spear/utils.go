@@ -62,6 +62,24 @@ func GetGithubClient() *github.Client {
 	return GithubClient
 }
 
+func LoadFile(branchName string, name string) (string, error) {
+	filename := path.Join(DIR, name)
+
+	ctx := context.Background()
+	opts := github.RepositoryContentGetOptions{Ref: branchName}
+	fileContent, _, _, err := GetGithubClient().Repositories.GetContents(
+		ctx, OWNER, REPO, filename, &opts,
+	)
+
+	if err != nil {
+		return "", fmt.Errorf("Can't load the file due to the error: %s", err)
+	}
+
+	content, err := fileContent.GetContent()
+
+	return content, err
+}
+
 // Loads a spec from the branch given.
 func LoadSpec(branchName string, name string) (*loads.Document, error) {
 	filename := path.Join(DIR, name)

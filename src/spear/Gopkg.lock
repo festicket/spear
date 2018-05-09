@@ -20,6 +20,12 @@
   version = "v9"
 
 [[projects]]
+  name = "github.com/ghodss/yaml"
+  packages = ["."]
+  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/go-openapi/analysis"
   packages = ["."]
@@ -192,6 +198,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a0aa5caec5ac1315f932e1b0a205d0b228a994fee9eaf94d62c068693b826e67"
+  inputs-digest = "7b302f324150eba24832543dabd25c28ed18199786011c4d190b827e4dbb00a8"
   solver-name = "gps-cdcl"
   solver-version = 1

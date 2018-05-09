@@ -15,6 +15,8 @@ services:
     environment:
      - GITHUB_TOKEN=123
      - SPECS_DIR=owner;repo;path
+     - HOST=localhost:8000
+     - SCHEME=http
     ports:
      - "8000:8000"
 ```
@@ -38,6 +40,7 @@ Visit http://localhost:8000
 
 - [x] Build a docker image
 - [x] Branch selector
+- [x] Support definitions in separate files
 - [ ] Build responses from examples whenever it is possible
   - [x] Get
   - [ ] Post
