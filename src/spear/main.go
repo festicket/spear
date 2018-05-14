@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/go-openapi/spec"
@@ -16,9 +18,10 @@ import (
 
 func main() {
 	r := pat.New()
-	r.Get("/{branch}/try/{filename}/{path:.*}", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+	r.NewRoute().PathPrefix("/{branch}/try/{filename}/{path:.*}").Handler(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		branch := r.URL.Query().Get(":branch")
 		fname := r.URL.Query().Get(":filename")
+		expectedStatusCode := r.Header.Get("X-Status")
 		specDoc, err := LoadSpec(branch, fname)
 
 		if HTTPError(rw, err) {
@@ -33,27 +36,59 @@ func main() {
 			SkipSchemas:  false,
 		})
 
-		re := regexp.MustCompile(`\{[\d\w]+\}`) // regexp to replace things like {someVariable}
+		re := regexp.MustCompile(`\{[\d\w\-]+\}`) // regexp to replace things like {someVariable}
 
 		for path, pathItem := range specDoc.Spec().SwaggerProps.Paths.Paths {
 			pattern := re.ReplaceAllString(path, `[\d\w-]+`)
-			matched, _ := regexp.MatchString(pattern, fmt.Sprintf("/%s", r.URL.Query().Get(":path")))
+			matched, _ := regexp.MatchString(fmt.Sprintf("%s$", pattern), fmt.Sprintf("/%s", r.URL.Query().Get(":path")))
 
-			if matched == false {
+			methodName := strings.Title(strings.ToLower(strings.Replace(r.Method, "Method", "", -1)))
+			operation := GetOperation(methodName, &pathItem).(*spec.Operation)
+
+			fmt.Println("=====")
+			fmt.Println(methodName)
+			fmt.Println(matched)
+			fmt.Println(pattern)
+			fmt.Println(operation)
+			fmt.Println(expectedStatusCode)
+			fmt.Println("=====")
+
+			if matched == false || operation == nil {
 				continue
 			}
 
-			// TODO: Support other operations
-			if pathItem.Get == nil {
-				continue
+			var schema *spec.Schema
+			responseStatus := http.StatusOK
+
+			if expectedStatusCode != "" {
+				status, err := strconv.ParseInt(expectedStatusCode, 10, 64)
+
+				if HTTPError(rw, err) {
+					return
+				}
+
+				responseStatus = int(status)
+				schema = operation.OperationProps.Responses.ResponsesProps.StatusCodeResponses[responseStatus].Schema
+			} else {
+				for _, successStatusCode := range []int{200, 302, 301} {
+					schema = operation.OperationProps.Responses.ResponsesProps.StatusCodeResponses[successStatusCode].Schema
+					if schema != nil {
+						responseStatus = successStatusCode
+						break
+					}
+				}
+			}
+
+			if schema == nil {
+				rw.WriteHeader(http.StatusMethodNotAllowed)
+				return
 			}
 
 			resp := make(map[string]interface{})
-			BuildExample(pathItem.Get.OperationProps.Responses.ResponsesProps.StatusCodeResponses[200].Schema, "", &resp)
-
+			BuildExample(schema, "", &resp)
 			b, _ := json.MarshalIndent(resp, "", " ")
 			rw.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			rw.WriteHeader(http.StatusOK)
+			rw.WriteHeader(responseStatus)
 			rw.Write(b)
 			return
 		}

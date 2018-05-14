@@ -41,10 +41,10 @@ Visit http://localhost:8000
 - [x] Build a docker image
 - [x] Branch selector
 - [x] Support definitions in separate files
-- [ ] Build responses from examples whenever it is possible
+- [x] Build responses from examples whenever it is possible
   - [x] Get
-  - [ ] Post
-  - [ ] Not only 200 responses
+  - [x] Post
+  - [x] Not only 200 responses but provide a way to request an expected response code
 - [ ] Cache requests (to avoid rate limits from Github)
   - [ ] Ability to reset the cache manually
 - [ ] Clear the code

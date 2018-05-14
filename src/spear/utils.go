@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"reflect"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
@@ -117,5 +118,17 @@ func BuildExample(schema *spec.Schema, key string, target *map[string]interface{
 				(*target)[k] = example
 			}
 		}
+	}
+}
+
+// Returns an operation for HTTP method specified
+func GetOperation(method string, pathItem *spec.PathItem) interface{} {
+	t := reflect.ValueOf(pathItem).Elem()
+	field := t.FieldByName(method)
+
+	if field.IsValid() {
+		return field.Interface()
+	} else {
+		return nil
 	}
 }
