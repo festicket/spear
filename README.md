@@ -1,37 +1,46 @@
 # SPEAR
 
-A service to provide an access to API specifications from your Github repository
-and render them via Swagger.
+A service to render OpenAPI specification files stored on GitHub. It also generates API endpoints which return dummy data based on the specification.
 
 # Quickstart
 
-You can use the pre build image. This is an example of `docker-compose` file:
+You can use next command to build the binary:
 
-```
-version: '3'
-services:
-  spear:
-    image: zerc/spear
-    environment:
-     - GITHUB_TOKEN=123
-     - SPECS_DIR=owner;repo;path
-     - HOST=localhost:8000
-     - SCHEME=http
-    ports:
-     - "8000:8000"
+```bash
+make install
+make build
 ```
 
-Where:
+First line will install all the dependencies using [dep](https://github.com/golang/dep) tool. Second line compiles the binary for `linux` architecture.
 
-* `GITHUB_TOKEN` - your github token. Generate it [here](https://github.com/settings/tokens)
-* `SPECS_DIR` - a string with information about the target repo. `owner` - repo's owner, `repo` - repo's name, `path` - a path to the folder with API specs.
+After that you can just run the binary created:
 
-Save this as `docker-compose.yml`.
-
-Now run:
-
+```bash
+./bin/spear
 ```
-docker-compose up spear
+
+These are environment variables you need to set to make it work:
+
+* `GITHUB_TOKEN` - your github token. Generate it [here](https://github.com/settings/tokens).
+* `SPECS_DIR` - a string with information about the target repository in format `owner;repo;path`: `owner` - owner of the repository, `repo` - name of the repository, `path` - a path within the repository to the root folder with spec files.
+
+## Docker
+
+You can use Docker for local development as well.
+
+First, you need to create the compose file, use the example provided:
+
+```bash
+ cp docker-compose.yml.example docker-compose.yml
+```
+ 
+Don't forget to update values for environment variables in `docker-compose.yml`. 
+
+You can automatically build the binary and image then run it via next command:
+
+
+```bash
+make bup
 ```
 
 Visit http://localhost:8000
