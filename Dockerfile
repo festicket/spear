@@ -7,4 +7,6 @@ ADD ./bin/spear /main/spear
 ADD ./src/spear/templates /main/templates
 WORKDIR /main
 
+RUN chmod +x spear
+
 CMD ["./spear"]
