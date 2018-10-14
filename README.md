@@ -23,6 +23,7 @@ These are environment variables you need to set to make it work:
 
 * `GITHUB_TOKEN` - your github token. Generate it [here](https://github.com/settings/tokens).
 * `SPECS_DIR` - a string with information about the target repository in format `owner;repo;path`: `owner` - owner of the repository, `repo` - name of the repository, `path` - a path within the repository to the root folder with spec files.
+* `USERNAME` and `PASSWORD` to enable [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication).
 
 ## Docker
 

@@ -11,11 +11,18 @@ func BasicAuth(h handler) handler {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 
-		if ok && password == utils.PASSWORD && username == utils.USERNAME {
+		// Basic auth is disabled.
+		if utils.USERNAME == "" || utils.PASSWORD == "" {
 			h(w, r)
-		} else {
-			w.Header().Set("WWW-Authenticate", "Basic realm=\"Login Required\"")
-			http.Error(w, "authorization failed", http.StatusUnauthorized)
+			return
 		}
+
+		if ok && username == utils.USERNAME && password == utils.PASSWORD {
+			h(w, r)
+			return
+		}
+
+		w.Header().Set("WWW-Authenticate", "Basic realm=\"Login Required\"")
+		http.Error(w, "authorization failed", http.StatusUnauthorized)
 	}
 }
