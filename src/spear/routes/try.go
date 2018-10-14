@@ -25,6 +25,9 @@ func TryPage(rw http.ResponseWriter, r *http.Request) {
 	// TODO: for some reason r.URL.Scheme and r.URL.Host are empty
 	base := fmt.Sprintf("%s://%s/%s/files/%s/json/", utils.SCHEME, utils.HOST, branch, fname)
 
+	// NOTE: internally it does HTTP requests to `routes.SpecPage` to resolve
+	// dependencies. Would be nice if we could avoid making request and use `routes.SpecPage`
+	// directly.
 	spec.ExpandSpec(specDoc.Spec(), &spec.ExpandOptions{
 		RelativeBase: base,
 		SkipSchemas:  false,
@@ -39,6 +42,10 @@ func TryPage(rw http.ResponseWriter, r *http.Request) {
 		methodName := strings.Title(strings.ToLower(strings.Replace(r.Method, "Method", "", -1)))
 		operation := utils.GetOperation(methodName, &pathItem).(*spec.Operation)
 
+		if matched == false || operation == nil {
+			continue
+		}
+
 		fmt.Println("=====")
 		fmt.Println(methodName)
 		fmt.Println(matched)
@@ -46,10 +53,6 @@ func TryPage(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println(operation)
 		fmt.Println(expectedStatusCode)
 		fmt.Println("=====")
-
-		if matched == false || operation == nil {
-			continue
-		}
 
 		var schema *spec.Schema
 		responseStatus := http.StatusOK

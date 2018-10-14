@@ -9,5 +9,7 @@ services:
      - SPECS_DIR=owner;repo;path
      - HOST=localhost:8000
      - SCHEME=http
+     - USERNAME=foo
+     - PASSWORD=bar
     ports:
      - "8000:8000"

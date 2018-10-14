@@ -23,3 +23,7 @@ type Link struct {
 var HOST = os.Getenv("HOST")
 
 var SCHEME = os.Getenv("SCHEME")
+
+// For basic auth
+var PASSWORD = os.Getenv("PASSWORD")
+var USERNAME = os.Getenv("USERNAME")
