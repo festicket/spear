@@ -12,6 +12,20 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+func init() {
+	// Define our own PathLoader to tweak HTTP client.
+	// Pretty much copied from
+	// https://github.com/go-openapi/spec/blob/837d3d5/expander.go#L231
+	// Changes are marked by (*)
+	spec.PathLoader = func(path string) (json.RawMessage, error) {
+		data, err := utils.LoadFromFileOrHTTP(path) // (*)
+		if err != nil {
+			return nil, err
+		}
+		return json.RawMessage(data), nil
+	}
+}
+
 func TryPage(rw http.ResponseWriter, r *http.Request) {
 	branch := r.URL.Query().Get(":branch")
 	fname := r.URL.Query().Get(":filename")

@@ -16,12 +16,10 @@ func main() {
 	r.NewRoute().PathPrefix("/{branch}/try/{filename}/{path:.*}").Handler(
 		http.HandlerFunc(middlewares.BasicAuth(routes.TryPage)))
 
-	// NOTE: this URL will be used to fetch additional files i.e. definitions
-	// so it needs to be open for everyone :(
-	// Need to change the approach i.e. add a service to work with Github as
+	// TODO: change the approach i.e. add a service to work with Github as
 	// filesystem instead of web thing.
 	r.Get("/{branch}/files/{filename}/json/{defs:.*}", http.HandlerFunc(
-		routes.SpecPage))
+		middlewares.BasicAuth(routes.SpecPage)))
 
 	r.Get("/{branch}/doc/{filename}", http.HandlerFunc(
 		middlewares.BasicAuth(routes.BranchDocument)))
