@@ -13,6 +13,9 @@ import (
 func main() {
 	r := pat.New()
 
+	// NOTE: this route is not protected
+	r.Get("/healthcheck", http.HandlerFunc(routes.HealthCheck))
+
 	r.NewRoute().PathPrefix("/{branch}/try/{filename}/{path:.*}").Handler(
 		http.HandlerFunc(middlewares.BasicAuth(routes.TryPage)))
 
