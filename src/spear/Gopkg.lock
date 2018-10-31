@@ -254,6 +254,7 @@
     "github.com/ghodss/yaml",
     "github.com/go-openapi/loads",
     "github.com/go-openapi/spec",
+    "github.com/go-openapi/swag",
     "github.com/google/go-github/github",
     "github.com/gorilla/pat",
     "golang.org/x/oauth2",
