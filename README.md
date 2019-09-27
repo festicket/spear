@@ -4,14 +4,27 @@ A service to render OpenAPI specification files stored on GitHub. It also genera
 
 # Quickstart
 
-You can use next command to build the binary:
+Change `$GOPATH` to the current directory using:
+
+```bash
+source activate
+```
+
+Install the dependencies required:
 
 ```bash
 make install
-make build
 ```
 
-First line will install all the dependencies using [dep](https://github.com/golang/dep) tool. Second line compiles the binary for `linux` architecture.
+We use [dep](https://github.com/golang/dep) for that.
+
+
+To build the binary for Linux, run the command:
+
+
+```bash
+make build
+```
 
 After that you can just run the binary created:
 
